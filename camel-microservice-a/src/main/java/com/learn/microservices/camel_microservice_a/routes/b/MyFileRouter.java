@@ -21,7 +21,7 @@ public class MyFileRouter extends RouteBuilder{
 		from("file:files/input")
 		.routeId("Files-Input-Route")
 		.transform().body(String.class)
-		.choice()
+		.choice() //Content Based Routing Pattern
 			.when(simple("${file:ext} ends with 'xml'"))
 				.log("XML FILE")
 			//.when(simple("${body} contains 'USD'"))
