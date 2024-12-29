@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 import com.learn.microservices.camel_microservice_a.CurrencyExchange;
 
-@Component
+//@Component
 public class EipPatternsRouter extends RouteBuilder{
 	@Autowired
 	DynamicRouterBean dynamicRouterBean;
@@ -25,6 +25,12 @@ public class EipPatternsRouter extends RouteBuilder{
 
 	@Override
 	public void configure() throws Exception {
+		
+		//Tracing
+		getContext().setTracing(true);
+		//Dead Letter Queue
+		errorHandler(deadLetterChannel("activemq:dead-letter-queue"));
+		
 		/*
 		Patterns: 
 		1. Pipeline Pattern (or Default Pattern)
@@ -62,12 +68,13 @@ public class EipPatternsRouter extends RouteBuilder{
 		
 		String routingSlip = "direct:endpoint1, direct:endpoint2";
 		
-		from("timer:routingSlip?period=10000")
+		from("timer:routingSlip?period={{timePeriod}}")
 		.transform().constant("My Message is Hardcoded")
 		.routingSlip(simple(routingSlip));
 		
 		from("direct:endpoint1")
-		.log("log:directendpoint1");
+		.wireTap("log:wire-tap") //WireTap
+		.log("{{endpoint-for-logging}}");
 		
 		from("direct:endpoint2")
 		.log("log:directendpoint2");
